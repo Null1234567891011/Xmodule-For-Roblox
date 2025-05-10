@@ -35,8 +35,8 @@
 _G.Modules = _G.Modules or {}
 _G.Modules.Xmodule = _G.Modules.Xmodule or {}
 
-local Modules = _G.Modules
-local Xmodule = Modules.Xmodule
+Modules = _G.Modules
+Xmodule = Modules.Xmodule
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local event = ReplicatedStorage:FindFirstChild("Xmodule")
