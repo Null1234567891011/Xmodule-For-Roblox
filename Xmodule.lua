@@ -59,19 +59,21 @@ function Modules.Xmodule.createModule(ModuleName)
 		local moduleConfig = Modules.Xmodule[moduleName]
 
 		function moduleConfig.add(funcOrVar, elementName)
-			event:Fire("Modules.Xmodule." .. moduleName .. ".")
+			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
 			local ok2, name = pcall(tostring, elementName)
 			if not ok2 or name == nil then return end
 			Modules[moduleName][name] = funcOrVar
 		end
 
 		function moduleConfig.del(elementName)
+			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "del(" .. elementName .. ")")
 			local ok2, Name = pcall(tostring, elementName)
 			if not ok2 or Name == nil then return end
 			Modules[moduleName][Name] = nil
 		end
 		
 		function moduleConfig.ren(elementName, newName)
+			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "ren(" .. elementName .. ", " .. newName .. ")")
 			local ok2, oldName = pcall(tostring, elementName)
 			if not ok2 or oldName == nil then return end
 			
@@ -86,6 +88,7 @@ function Modules.Xmodule.createModule(ModuleName)
 		end
 		
 		function moduleConfig.duplicate(elementName, newName)
+			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "duplicate(" .. elementName .. ", " .. newName .. ")")
 			local ok2, oldName = pcall(tostring, elementName)
 			if not ok2 or oldName == nil then return end
 
