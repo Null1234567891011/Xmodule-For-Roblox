@@ -17,6 +17,7 @@
 
 	Change Log:
 		1.0.0: First Version. Fixed: ...Nothing. Yeah, like Gui - API.
+		1.0.1: Tested and fixed some Bugs like "attempt to index 'nil'"
 
 	Functions:
 		Initialization Commands:
