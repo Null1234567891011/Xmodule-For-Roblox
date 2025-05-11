@@ -14,6 +14,8 @@
 	Description:
 		Executable script that allows you to use “Modules”. Module scripts like Xfile create their own modules, 
 		and regular scripts can contact them and call different commands.
+		WARNING: DO NOT PASTE THIS CODE INTO ROBLOX STUDIO ELSE YOU WILL BE BANNED!
+		Yeah, my twink and main Account banned by theese mothe####kers.
 
 	Change Log:
 		1.0.0: First Version. Fixed: ...Nothing. Yeah, like Gui - API.
