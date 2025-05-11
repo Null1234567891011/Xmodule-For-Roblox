@@ -8,7 +8,7 @@
 	/__/ /\ __\    \|__|     \|__|\|_______|\|_______|\|_______|\|_______|\|_______|
 	|__|/ \|__|
 
-	Version: 1.0.0
+	Version: 1.0.1
 	Author: Haecker
 
 	Description:
@@ -34,6 +34,8 @@
 
 _G.Modules = _G.Modules or {}
 _G.Modules.Xmodule = _G.Modules.Xmodule or {}
+
+local Modules = _G.Modules
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local event = ReplicatedStorage:FindFirstChild("Xmodule")
@@ -68,22 +70,22 @@ function Modules.Xmodule.createModule(ModuleName)
 			if not ok2 or Name == nil then return end
 			Modules[moduleName][Name] = nil
 		end
-		
+
 		function moduleConfig.ren(elementName, newName)
 			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "ren(" .. elementName .. ", " .. newName .. ")")
 			local ok2, oldName = pcall(tostring, elementName)
 			if not ok2 or oldName == nil then return end
-			
+
 			local ok3, newNameFixed = pcall(tostring, newName)
 			if not ok3 or newNameFixed == nil then return end
-			
+
 			if Modules[moduleName][oldName] == nil then return end
 			if Modules[moduleName][newNameFixed] ~= nil then return end
-			
+
 			Modules[moduleName][newNameFixed] = Modules[moduleName][oldName]
 			Modules[moduleName][oldName] = nil
 		end
-		
+
 		function moduleConfig.duplicate(elementName, newName)
 			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "duplicate(" .. elementName .. ", " .. newName .. ")")
 			local ok2, oldName = pcall(tostring, elementName)
