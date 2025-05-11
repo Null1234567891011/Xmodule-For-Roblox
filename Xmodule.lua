@@ -59,6 +59,7 @@ function Modules.Xmodule.createModule(ModuleName)
 		local moduleConfig = Modules.Xmodule[moduleName]
 
 		function moduleConfig.add(funcOrVar, elementName)
+			print("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
 			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
 			local ok2, name = pcall(tostring, elementName)
 			if not ok2 or name == nil then return end
