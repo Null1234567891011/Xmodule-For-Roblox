@@ -59,8 +59,8 @@ function Modules.Xmodule.createModule(ModuleName)
 		local moduleConfig = Modules.Xmodule[moduleName]
 
 		function moduleConfig.add(funcOrVar, elementName)
+			
 			print(elementName)
-			print(funcOrVar)
 			print(moduleName)
 			print("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
 			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
