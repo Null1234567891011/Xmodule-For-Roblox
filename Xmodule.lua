@@ -8,7 +8,7 @@
 	/__/ /\ __\    \|__|     \|__|\|_______|\|_______|\|_______|\|_______|\|_______|
 	|__|/ \|__|
 
-	Version: 1.0.2
+	Version: 1.0.3
 	Author: Haecker
 
 	Description:
@@ -24,19 +24,32 @@
 				
 				Xfile: allows you to manage files and folders — create, modify, or delete them as needed. Not all exploits 
 				support Xfile, if they do, Xfile will report that your exploit does not support the file system.
+		1.0.3: The mechanics of how modules work have been updated. Xmodule now actually creates module scripts, rather than imitating 
+			   them. It works simply:
+			   
+				function createModule creates a module that consists of add, del, ren, duplicate, replace and the module itself 
+				where your functions and variables are stored. Xmodule simply returns the module itself and the tools to modify it 
+				without affecting Source.
 
 	Functions:
 		Initialization Commands:
 			Modules.Xmodule.createModule(String: ModuleName): Creates a Module. If it already exist, nothing happens.
 			Modules.Xmodule.deleteModule(String: ModuleName): Deletes a Module. If it does not exist, nothing happens.
 
-		For Module Scripts:
-			Modules.Xmodule.{YOUR_MODULE_NAME}.add(Any: funcOrVar, String: elementName): Adds a function or variable with the specified 
-			name that can be accessed or called by another script.
+		For scripts that create modules:
+			Modules.Xmodule.{YOUR_MODULE_NAME}.add(Any: element, String: elementName): Adds a function or variable with the specified 
+			name that can be accessed or called by another script, only if the name does not already exist in the module.
 			Modules.Xmodule.{YOUR_MODULE_NAME}.del(String: elementName): Deletes the function or variable with the specified name from 
-			the module. 
+			the module.
+			Modules.Xmodule.{YOUR_MODULE_NAME}.ren(String: elementName, String: newName): Renames an existing function or variable 
+			from elementName to newName, only if elementName exists and newName does not exist in the module.
+			Modules.Xmodule.{YOUR_MODULE_NAME}.duplicate(String: elementName, String?: newName): Creates a duplicate of the specified element. 
+			If newName is provided and not taken, duplicates under newName; otherwise, duplicates under a generated name like 
+			elementNameDuplicate1, elementNameDuplicate2, etc.
+			Modules.Xmodule.{YOUR_MODULE_NAME}.replace(String: elementName, Any: newElement): Replaces the existing element with elementName 
+			by newElement, only if elementName exists in the module.
 
-		For Scripts:
+		For Users:
 			Modules.{YOUR_MODULE_NAME}.{YOUR_FUNC_NAME}(): Calls the specified function. If it does not exist, nothing happens.
 			Modules.{YOUR_MODULE_NAME}.{YOUR_VAR_NAME}: Returns the value of the {YOUR_VAR_NAME} variable. If it does not exist, 
 			nil returns.
@@ -67,96 +80,32 @@ _G.Modules.Xmodule = _G.Modules.Xmodule or {}
 
 local Modules = _G.Modules
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local event = ReplicatedStorage:FindFirstChild("Xmodule")
+local RepSt = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
 
---Create Xmodule Event
-if event == nil then
-	event = Instance.new("BindableEvent", ReplicatedStorage)
-	event.Name = "Xmodule"
-end
-
 function Modules.Xmodule.createModule(ModuleName)
-	event:Fire("Modules.Xmodule.createModule(" .. ModuleName .. ")")
-	local ok, moduleName = pcall(tostring, ModuleName)
-	if not ok or moduleName == nil then return end
+	local ok, ModuleName = pcall(tostring, ModuleName)
+	if not ok or ModuleName == nil then return end
 
-	if Modules[moduleName] == nil then
-		Modules[moduleName] = {}
-		Modules.Xmodule[moduleName] = {}
-
-		local moduleConfig = Modules.Xmodule[moduleName]
-
-		function moduleConfig.add(funcOrVar, elementName)
-			print("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
-			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "add(" .. funcOrVar .. ", " .. elementName .. ")")
-			local ok2, name = pcall(tostring, elementName)
-			if not ok2 or name == nil then return end
-			Modules[moduleName][name] = funcOrVar
-		end
-
-		function moduleConfig.del(elementName)
-			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "del(" .. elementName .. ")")
-			local ok2, Name = pcall(tostring, elementName)
-			if not ok2 or Name == nil then return end
-			Modules[moduleName][Name] = nil
-		end
-
-		function moduleConfig.ren(elementName, newName)
-			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "ren(" .. elementName .. ", " .. newName .. ")")
-			local ok2, oldName = pcall(tostring, elementName)
-			if not ok2 or oldName == nil then return end
-
-			local ok3, newNameFixed = pcall(tostring, newName)
-			if not ok3 or newNameFixed == nil then return end
-
-			if Modules[moduleName][oldName] == nil then return end
-			if Modules[moduleName][newNameFixed] ~= nil then return end
-
-			Modules[moduleName][newNameFixed] = Modules[moduleName][oldName]
-			Modules[moduleName][oldName] = nil
-		end
-
-		function moduleConfig.duplicate(elementName, newName)
-			event:Fire("Modules.Xmodule." .. moduleName .. "." .. "duplicate(" .. elementName .. ", " .. newName .. ")")
-			local ok2, oldName = pcall(tostring, elementName)
-			if not ok2 or oldName == nil then return end
-
-			local ok3, newNameFixed = pcall(tostring, newName)
-			if not ok3 or newNameFixed == nil then newNameFixed = oldName .. "Copy" end
-
-			if Modules[moduleName][oldName] == nil then return end
-			if Modules[moduleName][newNameFixed] ~= nil then return end
-
-			Modules[moduleName][newNameFixed] = Modules[moduleName][oldName]
-		end
-
-		setmetatable(Modules[moduleName], {
-			__index = function(t, key)
-				local val = rawget(t, key)
-				if type(val) == "function" then
-					return val
-				end
-
-				return val
-			end
-		})
+	if Modules[ModuleName] == nil and not RepSt:FindFirstChild(ModuleName) then
+		local ModuleScript = Instance.new("ModuleScript", ModuleName)
+		ModuleScript.Name = ModuleName
+		ModuleScript.Source = 'local module = {} local tools = {["add"] = function(element, elementName) if elementName ~= nil and typeof(elementName) == "string" and module[elementName] == nil then module[elementName] = element end end, ["del"] = function(elementName) if elementName ~= nil and typeof(elementName) == "string" then module[elementName] = nil end end, ["ren"] = function(elementName, newName) if elementName ~= nil and typeof(elementName) == "string" and module[elementName] ~= nil and module[newName] == nil and newName ~= nil and typeof(newName) == "string" then module[newName] = module[elementName] module[elementName] = nil end end, ["duplicate"] = function(elementName, newName) if elementName ~= nil and typeof(elementName) == "string" and module[elementName] ~= nil and module[newName] == nil and newName ~= nil and typeof(newName) == "string" then module[newName] = module[elementName] elseif elementName ~= nil and typeof(elementName) == "string" and module[elementName] ~= nil then local i = 1 while module[elementName .. "Duplucate" .. tostring(i)] do i += 1 end module[elementName .. "Duplucate" .. tostring(i)] = module[elementName] end end, ["replace"] = function(elementName, newElement) if elementName ~= nil and typeof(elementName) == "string" and module[elementName] ~= nil then module[elementName] = newElement end end} return {module, tools}'
+		Modules[ModuleName] = {}
+		Modules.Xmodule[ModuleName] = require(ModuleScript)[1]
 	end
 end
 
 function Modules.Xmodule.deleteModule(ModuleName)
-	event:Fire("Modules.Xmodule.deleteModule(" .. ModuleName .. ")")
-	local ok, name = pcall(tostring, ModuleName)
-	if not ok or name == nil then return end
-	if Modules[name] == nil then return end
-	Modules[name] = nil
-	Modules.Xmodule[name] = nil
-end
+	local ok, ModuleName = pcall(tostring, ModuleName)
+	if not ok or ModuleName == nil then return end
 
-event.Event:Connect(function(command)
-	pcall(function() loadstring(command) end)
-end)
+	local ModuleScript = RepSt:FindFirstChild(ModuleName)
+	if ModuleScript then
+		ModuleScript:Destroy()
+		Modules[ModuleName] = {}
+	end
+end
 
 -- Built-in Modules:
 
@@ -350,3 +299,13 @@ Modules.Xmodule.Xfile.add(function(path)
 		})
 	end
 end, "delFile")
+
+-- Update Modules
+while wait() do
+	for ModuleName, _ in pairs(Modules) do
+		if ModuleName ~= "Xmodule" then
+			Modules[ModuleName] = require(RepSt:FindFirstChild(ModuleName))[2] or Modules[ModuleName]
+		end
+		wait()
+	end
+end
